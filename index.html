@@ -11,48 +11,60 @@ body{
   font-family: sans-serif;
   max-width: 600px;
   margin: 0 auto;
-  padding: 30px 20px;
-  line-height: 2;
-  font-size: 18px;
+  padding: 20px 16px;
+  line-height: 1.8;
+  font-size: 17px;
 }
 
 h2{
-  font-size: 26px;
-  margin-bottom: 25px;
+  font-size: 24px;
+  margin-bottom: 18px;
+}
+
+/* 折りたたみ */
+details{
+  background:#f6f6f6;
+  border-radius:12px;
+  padding:12px 14px;
+  margin-bottom:20px;
+}
+
+summary{
+  font-weight:bold;
+  font-size:17px;
+  cursor:pointer;
 }
 
 input, select{
-  width: 100%;
-  font-size: 20px;
-  padding: 12px;
-  margin-top: 6px;
-  margin-bottom: 18px;
-  box-sizing: border-box;
+  width:100%;
+  font-size:18px;
+  padding:10px;
+  margin-top:6px;
+  margin-bottom:14px;
+  box-sizing:border-box;
 }
 
 button{
-  width: 100%;
-  font-size: 20px;
-  padding: 14px;
-  border-radius: 10px;
+  width:100%;
+  font-size:20px;
+  padding:14px;
+  border-radius:10px;
 }
 
 .result{
-  margin-top: 25px;
-  font-size: 28px;
-  font-weight: bold;
+  margin-top:20px;
+  font-size:26px;
+  font-weight:bold;
 }
 
 .note{
-  margin-top: 15px;
-  font-size: 13px;
-  color: #666;
+  margin-top:14px;
+  font-size:13px;
+  color:#666;
 }
 
 .small{
   font-size:14px;
-  margin-top:-10px;
-  margin-bottom:15px;
 }
 </style>
 </head>
@@ -61,50 +73,59 @@ button{
 
 <h2>🚄 シャッタースピード計算 📷</h2>
 
-<!-- ★ 追加：メーカー選択 -->
-メーカー
-<select id="brand"></select>
 
-<!-- ★ 追加：機種選択 -->
-機種
-<select id="model"></select>
+<!-- ===============================
+     ★ 折りたたみカメラ設定
+================================ -->
+<details id="cameraBox">
+  <summary>📷 カメラ設定（タップで開閉）</summary>
 
-<!-- ★ 既存 -->
+  メーカー
+  <select id="brand"></select>
+
+  機種
+  <select id="model"></select>
+
+  カメラの横ピクセル数(px)
+  <input id="pixel" type="number">
+
+  <label class="small">
+    <input type="checkbox" id="manual">
+    ピクセル数を手動入力する
+  </label>
+</details>
+
+
+<!-- ===============================
+     計算入力
+================================ -->
+
 列車速度(km/h)
 <input id="speed" type="number">
 
 画角の横幅(m)
 <input id="width" type="number" step="0.1">
 
-カメラの横ピクセル数(px)
-<input id="pixel" type="number">
-
-<label class="small">
-  <input type="checkbox" id="manual">
-  ピクセル数を手動入力する
-</label>
-
 <button onclick="calc()">計算する</button>
 
 <div class="result" id="result"></div>
 
+
 <div class="note">
 ※メーカーと機種を選ぶと横ピクセル数が自動入力されます<br>
-※ピクセル数が間違っている場合は手動入力してください<br>
-※列車が真横に移動する際の理論値で手ブレ等は加味されません<br>
-<div class="note">
-  作者X：
-  <a href="https://x.com/jo_taku150?s=21" target="_blank">
-    @jo_taku150 
-  </a>
-  （何かお気づきの点があれば連絡ください）
+※列車が真横に移動する際の理論値です<br><br>
+
+作者X：
+<a href="https://x.com/jo_taku150?s=21" target="_blank">
+  @jo_taku150
+</a>
 </div>
 
-</div>
+
 
 <script>
 /* ===============================
-   カメラデータ（ここに追加してOK）
+   カメラデータ
 =============================== */
 
 const cameraData = {
@@ -139,14 +160,22 @@ const cameraData = {
 
 };
 
+
 /* ===============================
-   セレクト自動生成
+   DOM取得
 =============================== */
 
 const brandSel = document.getElementById("brand");
 const modelSel = document.getElementById("model");
 const pixelInput = document.getElementById("pixel");
 const manual = document.getElementById("manual");
+
+const STORAGE_KEY = "cameraSetting";
+
+
+/* ===============================
+   セレクト生成
+=============================== */
 
 Object.keys(cameraData).forEach(b=>{
   brandSel.add(new Option(b,b));
@@ -171,19 +200,51 @@ function updatePixel(){
   }
 }
 
-brandSel.onchange = updateModels;
-modelSel.onchange = updatePixel;
 
-manual.onchange = ()=>{
-  pixelInput.disabled = !manual.checked;
-  updatePixel();
-};
+/* ===============================
+   保存機能（localStorage）
+=============================== */
+
+function saveSetting(){
+  const s = {
+    brand: brandSel.value,
+    model: modelSel.value,
+    pixel: pixelInput.value,
+    manual: manual.checked
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+}
+
+function loadSetting(){
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if(!saved) return;
+
+  const s = JSON.parse(saved);
+
+  brandSel.value = s.brand;
+  updateModels();
+  modelSel.value = s.model;
+
+  manual.checked = s.manual;
+  pixelInput.disabled = !s.manual;
+  pixelInput.value = s.pixel;
+}
+
+
+/* イベント */
+brandSel.onchange = ()=>{ updateModels(); saveSetting(); };
+modelSel.onchange = ()=>{ updatePixel(); saveSetting(); };
+manual.onchange   = ()=>{ pixelInput.disabled=!manual.checked; updatePixel(); saveSetting(); };
+pixelInput.oninput = saveSetting;
+
 
 /* 初期化 */
 updateModels();
+loadSetting();
+
 
 /* ===============================
-   既存の計算ロジック（変更なし）
+   計算ロジック
 =============================== */
 
 function calc() {
