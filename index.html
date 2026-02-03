@@ -62,13 +62,13 @@ button{
 
 <h2>🚄 シャッタースピード計算 📷</h2>
 
-速度(km/h)
+列車速度(km/h)
 <input id="speed" type="number">
 
 画角の横幅(m)
 <input id="width" type="number" step="0.1">
 
-横ピクセル数(px)
+カメラの横ピクセル数(px)
 <input id="pixel" type="number">
 
 <button onclick="calc()">計算する</button>
@@ -76,7 +76,7 @@ button{
 <div class="result" id="result"></div>
 
 <div class="note">
-※あくまでも理論値であり、手ブレ等は加味していません
+※あくまでも列車が真横に移動する際の理論値であり、手ブレ等は加味していません
 </div>
 
 <script>
