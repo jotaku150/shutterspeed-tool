@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>列車流し撮り シャッター速度計算</title>
+<title>列車サイドビュー撮影シャッタースピード計算</title>
 
 <style>
 body{
