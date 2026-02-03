@@ -75,10 +75,10 @@ button{
 
 
 <!-- ===============================
-     ★ 折りたたみカメラ設定
+     カメラ設定（折りたたみ）
 ================================ -->
-<details id="cameraBox">
-  <summary>📷 カメラ設定（タップで開閉）</summary>
+<details>
+  <summary id="cameraSummary">📷 カメラ設定</summary>
 
   メーカー
   <select id="brand"></select>
@@ -95,10 +95,6 @@ button{
   </label>
 </details>
 
-
-<!-- ===============================
-     計算入力
-================================ -->
 
 列車速度(km/h)
 <input id="speed" type="number">
@@ -157,7 +153,6 @@ const cameraData = {
     "α6700": 6192,
     "α6600 / α6400": 6000
   }
-
 };
 
 
@@ -169,6 +164,7 @@ const brandSel = document.getElementById("brand");
 const modelSel = document.getElementById("model");
 const pixelInput = document.getElementById("pixel");
 const manual = document.getElementById("manual");
+const cameraSummary = document.getElementById("cameraSummary");
 
 const STORAGE_KEY = "cameraSetting";
 
@@ -202,6 +198,16 @@ function updatePixel(){
 
 
 /* ===============================
+   サマリー表示更新（← NEW）
+=============================== */
+
+function updateSummary(){
+  cameraSummary.textContent =
+    `📷 ${brandSel.value} / ${modelSel.value} / ${pixelInput.value}px`;
+}
+
+
+/* ===============================
    保存機能（localStorage）
 =============================== */
 
@@ -231,16 +237,39 @@ function loadSetting(){
 }
 
 
-/* イベント */
-brandSel.onchange = ()=>{ updateModels(); saveSetting(); };
-modelSel.onchange = ()=>{ updatePixel(); saveSetting(); };
-manual.onchange   = ()=>{ pixelInput.disabled=!manual.checked; updatePixel(); saveSetting(); };
-pixelInput.oninput = saveSetting;
+/* ===============================
+   イベント
+=============================== */
+
+brandSel.onchange = ()=>{
+  updateModels();
+  saveSetting();
+  updateSummary();
+};
+
+modelSel.onchange = ()=>{
+  updatePixel();
+  saveSetting();
+  updateSummary();
+};
+
+manual.onchange = ()=>{
+  pixelInput.disabled=!manual.checked;
+  updatePixel();
+  saveSetting();
+  updateSummary();
+};
+
+pixelInput.oninput = ()=>{
+  saveSetting();
+  updateSummary();
+};
 
 
 /* 初期化 */
 updateModels();
 loadSetting();
+updateSummary();
 
 
 /* ===============================
