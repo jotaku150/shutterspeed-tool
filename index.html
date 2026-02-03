@@ -2,53 +2,74 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
+
+<!-- ★ スマホ最適化（超重要） -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>列車シャッタースピード計算</title>
 
 <style>
 body{
   font-family: sans-serif;
-  max-width: 420px;
-  margin: 40px auto;
-  padding: 20px;
-  line-height: 1.8;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 30px 20px;
+  line-height: 2;
+  font-size: 18px; /* ← 全体拡大 */
 }
 
+/* タイトル */
+h2{
+  font-size: 26px;
+  margin-bottom: 25px;
+}
+
+/* 入力欄 */
 input{
-  width: 120px;
-  font-size: 16px;
+  width: 100%;
+  font-size: 20px;
+  padding: 12px;
+  margin-top: 6px;
+  margin-bottom: 18px;
+  box-sizing: border-box;
 }
 
+/* ボタン */
 button{
-  margin-top: 15px;
-  padding: 8px 16px;
-  font-size: 16px;
+  width: 100%;
+  font-size: 20px;
+  padding: 14px;
+  border-radius: 10px;
 }
 
+/* 結果 */
 .result{
-  margin-top: 20px;
-  font-size: 22px;
+  margin-top: 25px;
+  font-size: 28px;
   font-weight: bold;
 }
 
+/* 注釈 */
 .note{
-  margin-top: 12px;
-  font-size: 12px;
+  margin-top: 15px;
+  font-size: 13px;
   color: #666;
 }
 </style>
 </head>
 
 <body>
+
 <h2>🚄 シャッタースピード計算 📷</h2>
 
-速度(km/h)<br>
-<input id="speed" type="number"><br>
+速度(km/h)
+<input id="speed" type="number">
 
-画角の横幅(m)<br>
-<input id="width" type="number" step="0.1"><br>
+画角の横幅(m)
+<input id="width" type="number" step="0.1">
 
-横ピクセル数(px)<br>
-<input id="pixel" type="number"><br>
+横ピクセル数(px)
+<input id="pixel" type="number">
 
 <button onclick="calc()">計算する</button>
 
@@ -75,7 +96,7 @@ function calc() {
   const tPixel = time / px;
   const shutter = 1 / tPixel;
 
-  // ★ 100単位に丸め
+  // 100単位丸め
   const rounded = Math.round(shutter / 100) * 100;
 
   document.getElementById("result").textContent =
