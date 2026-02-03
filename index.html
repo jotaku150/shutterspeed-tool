@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>シャッタースピード計算</title>
+<title>列車シャッタースピード計算</title>
 
 <style>
 body{
@@ -12,38 +12,51 @@ body{
   padding: 20px;
   line-height: 1.8;
 }
+
 input{
   width: 120px;
   font-size: 16px;
 }
+
 button{
   margin-top: 15px;
   padding: 8px 16px;
   font-size: 16px;
 }
+
 .result{
   margin-top: 20px;
   font-size: 22px;
   font-weight: bold;
 }
+
+.note{
+  margin-top: 12px;
+  font-size: 12px;
+  color: #666;
+}
 </style>
 </head>
 
 <body>
-<h2>🚄シャッタースピード計算📷</h2>
+<h2>🚄 シャッタースピード計算 📷</h2>
 
-列車速度(km/h)<br>
+速度(km/h)<br>
 <input id="speed" type="number"><br>
 
 画角の横幅(m)<br>
 <input id="width" type="number" step="0.1"><br>
 
-カメラの横ピクセル数(px)<br>
+横ピクセル数(px)<br>
 <input id="pixel" type="number"><br>
 
 <button onclick="calc()">計算する</button>
 
 <div class="result" id="result"></div>
+
+<div class="note">
+※あくまでも理論値であり、手ブレ等は加味していません
+</div>
 
 <script>
 function calc() {
@@ -57,14 +70,16 @@ function calc() {
     return;
   }
 
-  const speed = kmh / 3.6;      // m/s
-  const time = width / speed;   // 横切る秒数
-  const tPixel = time / px;     // 1pxにかかる秒数
+  const speed = kmh / 3.6;
+  const time = width / speed;
+  const tPixel = time / px;
   const shutter = 1 / tPixel;
 
+  // ★ 100単位に丸め
+  const rounded = Math.round(shutter / 100) * 100;
+
   document.getElementById("result").textContent =
-    `必要シャッター速度： 1/${Math.round(shutter)} 秒 <br>
-    ※あくまでも理論値です。手ブレは加味していません。`;
+    `必要シャッター速度： 1/${rounded} 秒`;
 }
 </script>
 
