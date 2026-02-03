@@ -21,18 +21,26 @@ h2{
   margin-bottom: 18px;
 }
 
-/* 折りたたみ */
+/* 折りたたみエリア */
 details{
   background:#f6f6f6;
   border-radius:12px;
   padding:12px 14px;
-  margin-bottom:20px;
+  margin-bottom:8px;
 }
 
 summary{
   font-weight:bold;
   font-size:17px;
   cursor:pointer;
+}
+
+/* ★ 現在設定表示 */
+.cameraStatus{
+  margin-bottom:20px;
+  font-size:14px;
+  font-weight:bold;
+  color:#444;
 }
 
 input, select{
@@ -78,7 +86,7 @@ button{
      カメラ設定（折りたたみ）
 ================================ -->
 <details>
-  <summary id="cameraSummary">📷 カメラ設定</summary>
+  <summary>📷 カメラ設定（タップで開閉）</summary>
 
   メーカー
   <select id="brand"></select>
@@ -94,6 +102,10 @@ button{
     ピクセル数を手動入力する
   </label>
 </details>
+
+<!-- ★ ここが常時表示エリア -->
+<div id="cameraStatus" class="cameraStatus"></div>
+
 
 
 列車速度(km/h)
@@ -164,7 +176,7 @@ const brandSel = document.getElementById("brand");
 const modelSel = document.getElementById("model");
 const pixelInput = document.getElementById("pixel");
 const manual = document.getElementById("manual");
-const cameraSummary = document.getElementById("cameraSummary");
+const cameraStatus = document.getElementById("cameraStatus");
 
 const STORAGE_KEY = "cameraSetting";
 
@@ -198,17 +210,17 @@ function updatePixel(){
 
 
 /* ===============================
-   サマリー表示更新（← NEW）
+   現在設定表示
 =============================== */
 
-function updateSummary(){
-  cameraSummary.textContent =
-    `📷 ${brandSel.value} / ${modelSel.value} / ${pixelInput.value}px`;
+function updateStatus(){
+  cameraStatus.textContent =
+    `現在：${brandSel.value} / ${modelSel.value} / ${pixelInput.value}px`;
 }
 
 
 /* ===============================
-   保存機能（localStorage）
+   保存（localStorage）
 =============================== */
 
 function saveSetting(){
@@ -244,36 +256,36 @@ function loadSetting(){
 brandSel.onchange = ()=>{
   updateModels();
   saveSetting();
-  updateSummary();
+  updateStatus();
 };
 
 modelSel.onchange = ()=>{
   updatePixel();
   saveSetting();
-  updateSummary();
+  updateStatus();
 };
 
 manual.onchange = ()=>{
   pixelInput.disabled=!manual.checked;
   updatePixel();
   saveSetting();
-  updateSummary();
+  updateStatus();
 };
 
 pixelInput.oninput = ()=>{
   saveSetting();
-  updateSummary();
+  updateStatus();
 };
 
 
 /* 初期化 */
 updateModels();
 loadSetting();
-updateSummary();
+updateStatus();
 
 
 /* ===============================
-   計算ロジック
+   計算
 =============================== */
 
 function calc() {
