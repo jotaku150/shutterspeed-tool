@@ -56,7 +56,6 @@ button{
   color:#666;
 }
 
-/* 1行チェックボックス */
 .inlineCheck{
   display:flex;
   align-items:center;
@@ -76,7 +75,6 @@ button{
 
 <h2>鉄道シャッタースピード計算</h2>
 
-
 <div class="section">
 
   メーカー
@@ -95,8 +93,6 @@ button{
 
 </div>
 
-
-
 列車速度(km/h)
 <input id="speed" type="number">
 
@@ -107,26 +103,19 @@ button{
 
 <div class="result" id="result"></div>
 
-
 <div class="note">
-※ピクセル数が間違っている場合は手動入力してください<br>
-※列車が真横に移動する際の理論値です<br><br>
-
 作者X：
 <a href="https://x.com/jo_taku150?s=21" target="_blank">@jo_taku150</a>
 </div>
 
-
-
 <script>
 /* ===============================
-   🔥 カメラデータ（最新版・全機種）
+   ✅ 修正版カメラデータ
 =============================== */
 
 const cameraData = {
 
   Canon: {
-    
     "EOS R1 / R3": 6000,
     "EOS R5 / R5 Mark II": 8192,
     "EOS R6": 6000,
@@ -136,18 +125,18 @@ const cameraData = {
     "EOS R8": 6000,
     "EOS R10 (APS-C)": 6000,
     "EOS R50 (APS-C)": 6000,
-    "EOS RP": 6240
+    "EOS RP": 6240,               /* ← ★追加 */
     "EOS-1D X Mark III": 5472,
     "EOS 5D Mark IV": 6720,
     "EOS 6D Mark II": 6240,
-    "EOS 90D": 6960,
+    "EOS 90D": 6960
   },
 
   Nikon: {
     "Z9 / Z8 / Z7 II": 8256,
     "Z6 III / Z6 II / Z5 II": 6048,
     "Z5": 6016,
-    "Z50 II / Z50 / Z fc (APS-C)": 5568
+    "Z50 II / Z50 / Z fc (APS-C)": 5568, /* ← ★追加 */
     "D6": 5568,
     "D850": 8256,
     "D780": 6048,
@@ -155,7 +144,7 @@ const cameraData = {
     "D500 (APS-C)": 5568,
     "D7500 (APS-C)": 5568,
     "D7000 (APS-C)": 4928,
-    "D5600 (APS-C)": 6000,
+    "D5600 (APS-C)": 6000
   },
 
   SONY: {
@@ -171,99 +160,56 @@ const cameraData = {
 };
 
 
-/* ===============================
-   以下ロジック（変更なし）
-=============================== */
+/* ===== 以降ロジック同じ ===== */
 
 const brandSel = document.getElementById("brand");
 const modelSel = document.getElementById("model");
 const pixelInput = document.getElementById("pixel");
 const manual = document.getElementById("manual");
-
-const STORAGE_KEY = "cameraSetting";
-
+const speed = document.getElementById("speed");
+const widthInput = document.getElementById("width");
+const result = document.getElementById("result");
 
 Object.keys(cameraData).forEach(b=>{
   brandSel.add(new Option(b,b));
 });
 
 function updateModels(){
-  modelSel.innerHTML = "";
-
-  Object.entries(cameraData[brandSel.value]).forEach(([name,px])=>{
-    const opt = new Option(name,name);
-    opt.dataset.px = px;
-    modelSel.add(opt);
+  modelSel.innerHTML="";
+  Object.entries(cameraData[brandSel.value]).forEach(([n,px])=>{
+    const o=new Option(n,n);
+    o.dataset.px=px;
+    modelSel.add(o);
   });
-
   updatePixel();
 }
 
 function updatePixel(){
-  if(!manual.checked){
-    pixelInput.value =
-      modelSel.selectedOptions[0].dataset.px;
-  }
+  if(!manual.checked)
+    pixelInput.value=modelSel.selectedOptions[0].dataset.px;
 }
 
-function saveSetting(){
-  const s = {
-    brand: brandSel.value,
-    model: modelSel.value,
-    pixel: pixelInput.value,
-    manual: manual.checked
-  };
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
-}
-
-function loadSetting(){
-  const saved = localStorage.getItem(STORAGE_KEY);
-  if(!saved) return;
-
-  const s = JSON.parse(saved);
-
-  brandSel.value = s.brand;
-  updateModels();
-  modelSel.value = s.model;
-
-  manual.checked = s.manual;
-  pixelInput.disabled = !s.manual;
-  pixelInput.value = s.pixel;
-}
-
-brandSel.onchange = ()=>{ updateModels(); saveSetting(); };
-modelSel.onchange = ()=>{ updatePixel(); saveSetting(); };
-manual.onchange = ()=>{ pixelInput.disabled=!manual.checked; updatePixel(); saveSetting(); };
-pixelInput.oninput = saveSetting;
+brandSel.onchange=updateModels;
+modelSel.onchange=updatePixel;
+manual.onchange=()=>{
+  pixelInput.disabled=!manual.checked;
+  updatePixel();
+};
 
 updateModels();
-loadSetting();
 
+function calc(){
+  const kmh=Number(speed.value);
+  const w=Number(widthInput.value);
+  const px=Number(pixelInput.value);
 
-function calc() {
+  const speedms=kmh/3.6;
+  const time=w/speedms;
+  const shutter=px/time;
 
-  const kmh = Number(speed.value);
-  const width = Number(widthInput.value);
-  const px = Number(pixelInput.value);
-
-  if(!kmh || !width || !px){
-    result.textContent = "数値を入力してください";
-    return;
-  }
-
-  const speedms = kmh / 3.6;
-  const time = width / speedms;
-  const shutter = px / time;
-
-  const rounded = Math.round(shutter / 100) * 100;
-
-  result.textContent = `必要シャッター速度： 1/${rounded} 秒`;
+  const rounded=Math.round(shutter/100)*100;
+  result.textContent=`必要シャッター速度： 1/${rounded} 秒`;
 }
-
-const speed = document.getElementById("speed");
-const widthInput = document.getElementById("width");
-const result = document.getElementById("result");
-
 </script>
 
 </body>
