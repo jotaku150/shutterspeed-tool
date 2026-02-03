@@ -2,8 +2,6 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-
-<!-- ★ スマホ最適化（超重要） -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>列車シャッタースピード計算</title>
@@ -15,17 +13,15 @@ body{
   margin: 0 auto;
   padding: 30px 20px;
   line-height: 2;
-  font-size: 18px; /* ← 全体拡大 */
+  font-size: 18px;
 }
 
-/* タイトル */
 h2{
   font-size: 26px;
   margin-bottom: 25px;
 }
 
-/* 入力欄 */
-input{
+input, select{
   width: 100%;
   font-size: 20px;
   padding: 12px;
@@ -34,7 +30,6 @@ input{
   box-sizing: border-box;
 }
 
-/* ボタン */
 button{
   width: 100%;
   font-size: 20px;
@@ -42,18 +37,22 @@ button{
   border-radius: 10px;
 }
 
-/* 結果 */
 .result{
   margin-top: 25px;
   font-size: 28px;
   font-weight: bold;
 }
 
-/* 注釈 */
 .note{
   margin-top: 15px;
   font-size: 13px;
   color: #666;
+}
+
+.small{
+  font-size:14px;
+  margin-top:-10px;
+  margin-bottom:15px;
 }
 </style>
 </head>
@@ -62,6 +61,15 @@ button{
 
 <h2>🚄 シャッタースピード計算 📷</h2>
 
+<!-- ★ 追加：メーカー選択 -->
+メーカー
+<select id="brand"></select>
+
+<!-- ★ 追加：機種選択 -->
+機種
+<select id="model"></select>
+
+<!-- ★ 既存 -->
 列車速度(km/h)
 <input id="speed" type="number">
 
@@ -71,15 +79,105 @@ button{
 カメラの横ピクセル数(px)
 <input id="pixel" type="number">
 
+<label class="small">
+  <input type="checkbox" id="manual">
+  ピクセル数を手動入力する
+</label>
+
 <button onclick="calc()">計算する</button>
 
 <div class="result" id="result"></div>
 
 <div class="note">
-※あくまでも列車が真横に移動する際の理論値であり、手ブレ等は加味していません
+※メーカーと機種を選ぶと横ピクセル数が自動入力されます<br>
+※暫定版のため、ピクセル数が間違っている可能性があります<br>
+※列車が真横に移動する際の理論値で手ブレ等は加味されません
 </div>
 
 <script>
+/* ===============================
+   カメラデータ（ここに追加してOK）
+=============================== */
+
+const cameraData = {
+
+  Canon: {
+    "EOS R5 / R5 Mark II": 8192,
+    "EOS R6 / R6 Mark II": 6000,
+    "EOS R7 (APS-C)": 6960,
+    "EOS R10 / R50 (APS-C)": 6000,
+    "EOS RP": 6240,
+    "EOS 90D": 6960
+  },
+
+  Nikon: {
+    "Z9 / Z8 / Z7 II": 8256,
+    "Z6 III / Z6 II / Z5 II": 6048,
+    "Z5": 6016,
+    "Z50 / Z fc (APS-C)": 5568,
+    "D850": 8256,
+    "D500 / D7500": 5568
+  },
+
+  Sony: {
+    "α1 / α1 II": 8640,
+    "α7R V / α7R IV / α7CR": 9504,
+    "α7 IV / α7C II": 7008,
+    "α7 III / α9系": 6000,
+    "α7S III": 4240,
+    "α6700": 6192,
+    "α6600 / α6400": 6000
+  }
+
+};
+
+/* ===============================
+   セレクト自動生成
+=============================== */
+
+const brandSel = document.getElementById("brand");
+const modelSel = document.getElementById("model");
+const pixelInput = document.getElementById("pixel");
+const manual = document.getElementById("manual");
+
+Object.keys(cameraData).forEach(b=>{
+  brandSel.add(new Option(b,b));
+});
+
+function updateModels(){
+  modelSel.innerHTML = "";
+
+  Object.entries(cameraData[brandSel.value]).forEach(([name,px])=>{
+    const opt = new Option(name,name);
+    opt.dataset.px = px;
+    modelSel.add(opt);
+  });
+
+  updatePixel();
+}
+
+function updatePixel(){
+  if(!manual.checked){
+    pixelInput.value =
+      modelSel.selectedOptions[0].dataset.px;
+  }
+}
+
+brandSel.onchange = updateModels;
+modelSel.onchange = updatePixel;
+
+manual.onchange = ()=>{
+  pixelInput.disabled = !manual.checked;
+  updatePixel();
+};
+
+/* 初期化 */
+updateModels();
+
+/* ===============================
+   既存の計算ロジック（変更なし）
+=============================== */
+
 function calc() {
 
   const kmh = Number(document.getElementById("speed").value);
@@ -96,7 +194,6 @@ function calc() {
   const tPixel = time / px;
   const shutter = 1 / tPixel;
 
-  // 100単位丸め
   const rounded = Math.round(shutter / 100) * 100;
 
   document.getElementById("result").textContent =
