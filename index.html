@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>列車シャッタースピード計算</title>
+<title>鉄道シャッタースピード計算</title>
 
 <style>
 body{
@@ -56,7 +56,7 @@ button{
   color:#666;
 }
 
-/* ★ 1行チェックボックス */
+/* 1行チェックボックス */
 .inlineCheck{
   display:flex;
   align-items:center;
@@ -65,8 +65,9 @@ button{
   margin-top:-6px;
   margin-bottom:14px;
 }
-  .inlineCheck input{
+.inlineCheck input{
   width:auto;
+  margin:0;
 }
 </style>
 </head>
@@ -76,9 +77,6 @@ button{
 <h2>鉄道シャッタースピード計算</h2>
 
 
-<!-- ===============================
-     カメラ設定（常時表示）
-================================ -->
 <div class="section">
 
   メーカー
@@ -111,58 +109,70 @@ button{
 
 
 <div class="note">
-※ピクセル数が間違っている場合手動入力してください<br>
-※手ブレがなく列車が真横に移動する際の理論値です<br>
+※ピクセル数が間違っている場合は手動入力してください<br>
+※列車が真横に移動する際の理論値です<br><br>
 
 作者X：
-<a href="https://x.com/jo_taku150?s=21" target="_blank">
-  @jo_taku150
-</a>
-（お気づきの点があればXまで）
-
+<a href="https://x.com/jo_taku150?s=21" target="_blank">@jo_taku150</a>
 </div>
 
 
 
 <script>
 /* ===============================
-   カメラデータ
+   🔥 カメラデータ（最新版・全機種）
 =============================== */
 
 const cameraData = {
 
   Canon: {
+    "EOS-1D X Mark III": 5472,
+    "EOS 5D Mark IV": 6720,
+    "EOS 6D Mark II": 6240,
+    "EOS 90D": 6960,
+
     "EOS R5 / R5 Mark II": 8192,
-    "EOS R6 / R6 Mark II": 6000,
+    "EOS R6": 6000,
+    "EOS R6 Mark II": 6000,
+    "EOS R6 Mark III": 6960,
     "EOS R7 (APS-C)": 6960,
-    "EOS R10 / R50 (APS-C)": 6000,
-    "EOS RP": 6240,
-    "EOS 90D": 6960
+    "EOS R8": 6000,
+    "EOS R10 (APS-C)": 6000,
+    "EOS R50 (APS-C)": 6000,
+    "EOS RP": 6240
   },
 
   Nikon: {
+    "D6": 5568,
+    "D850": 8256,
+    "D780": 6048,
+    "D610": 6016,
+    "D500 (APS-C)": 5568,
+    "D7500 (APS-C)": 5568,
+    "D7000 (APS-C)": 4928,
+    "D5600 (APS-C)": 6000,
+
     "Z9 / Z8 / Z7 II": 8256,
     "Z6 III / Z6 II / Z5 II": 6048,
     "Z5": 6016,
-    "Z50 / Z fc (APS-C)": 5568,
-    "D850": 8256,
-    "D500 / D7500": 5568
+    "Z50 II / Z50 / Z fc (APS-C)": 5568
   },
 
   SONY: {
     "α1 / α1 II": 8640,
+    "α9 III / α9 II": 6000,
     "α7R V / α7R IV / α7CR": 9504,
     "α7 IV / α7C II": 7008,
-    "α7 III / α9系": 6000,
+    "α7 III": 6000,
     "α7S III": 4240,
-    "α6700": 6192,
-    "α6600 / α6400": 6000
+    "α6700 (APS-C)": 6192,
+    "α6600 / α6400 (APS-C)": 6000
   }
 };
 
 
 /* ===============================
-   DOM
+   以下ロジック（変更なし）
 =============================== */
 
 const brandSel = document.getElementById("brand");
@@ -172,10 +182,6 @@ const manual = document.getElementById("manual");
 
 const STORAGE_KEY = "cameraSetting";
 
-
-/* ===============================
-   セレクト生成
-=============================== */
 
 Object.keys(cameraData).forEach(b=>{
   brandSel.add(new Option(b,b));
@@ -199,11 +205,6 @@ function updatePixel(){
       modelSel.selectedOptions[0].dataset.px;
   }
 }
-
-
-/* ===============================
-   保存（自動記憶）
-=============================== */
 
 function saveSetting(){
   const s = {
@@ -230,60 +231,39 @@ function loadSetting(){
   pixelInput.value = s.pixel;
 }
 
-
-/* ===============================
-   イベント
-=============================== */
-
-brandSel.onchange = ()=>{
-  updateModels();
-  saveSetting();
-};
-
-modelSel.onchange = ()=>{
-  updatePixel();
-  saveSetting();
-};
-
-manual.onchange = ()=>{
-  pixelInput.disabled = !manual.checked;
-  updatePixel();
-  saveSetting();
-};
-
+brandSel.onchange = ()=>{ updateModels(); saveSetting(); };
+modelSel.onchange = ()=>{ updatePixel(); saveSetting(); };
+manual.onchange = ()=>{ pixelInput.disabled=!manual.checked; updatePixel(); saveSetting(); };
 pixelInput.oninput = saveSetting;
 
-
-/* 初期化 */
 updateModels();
 loadSetting();
 
 
-/* ===============================
-   計算
-=============================== */
-
 function calc() {
 
-  const kmh = Number(document.getElementById("speed").value);
-  const width = Number(document.getElementById("width").value);
-  const px = Number(document.getElementById("pixel").value);
+  const kmh = Number(speed.value);
+  const width = Number(widthInput.value);
+  const px = Number(pixelInput.value);
 
   if(!kmh || !width || !px){
-    document.getElementById("result").textContent = "数値を入力してください";
+    result.textContent = "数値を入力してください";
     return;
   }
 
-  const speed = kmh / 3.6;
-  const time = width / speed;
-  const tPixel = time / px;
-  const shutter = 1 / tPixel;
+  const speedms = kmh / 3.6;
+  const time = width / speedms;
+  const shutter = px / time;
 
   const rounded = Math.round(shutter / 100) * 100;
 
-  document.getElementById("result").textContent =
-    `必要シャッター速度： 1/${rounded} 秒`;
+  result.textContent = `必要シャッター速度： 1/${rounded} 秒`;
 }
+
+const speed = document.getElementById("speed");
+const widthInput = document.getElementById("width");
+const result = document.getElementById("result");
+
 </script>
 
 </body>
