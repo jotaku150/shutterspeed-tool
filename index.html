@@ -21,26 +21,11 @@ h2{
   margin-bottom: 18px;
 }
 
-/* 折りたたみエリア */
-details{
+.section{
   background:#f6f6f6;
   border-radius:12px;
-  padding:12px 14px;
-  margin-bottom:8px;
-}
-
-summary{
-  font-weight:bold;
-  font-size:17px;
-  cursor:pointer;
-}
-
-/* ★ 現在設定表示 */
-.cameraStatus{
+  padding:14px;
   margin-bottom:20px;
-  font-size:14px;
-  font-weight:bold;
-  color:#444;
 }
 
 input, select{
@@ -71,8 +56,14 @@ button{
   color:#666;
 }
 
-.small{
+/* ★ 1行チェックボックス */
+.inlineCheck{
+  display:flex;
+  align-items:center;
+  gap:8px;
   font-size:14px;
+  margin-top:-6px;
+  margin-bottom:14px;
 }
 </style>
 </head>
@@ -83,10 +74,9 @@ button{
 
 
 <!-- ===============================
-     カメラ設定（折りたたみ）
+     カメラ設定（常時表示）
 ================================ -->
-<details>
-  <summary>カメラ設定（タップで開閉）</summary>
+<div class="section">
 
   メーカー
   <select id="brand"></select>
@@ -97,14 +87,12 @@ button{
   カメラの横ピクセル数(px)
   <input id="pixel" type="number">
 
-  <label class="small">
+  <label class="inlineCheck">
     <input type="checkbox" id="manual">
     ピクセル数を手動入力する
   </label>
-</details>
 
-<!-- ★ ここが常時表示エリア -->
-<div id="cameraStatus" class="cameraStatus"></div>
+</div>
 
 
 
@@ -121,14 +109,12 @@ button{
 
 <div class="note">
 ※メーカーと機種を選ぶと横ピクセル数が自動入力されます<br>
-※列車が真横に移動する際の理論値で等しません<br><br>
+※列車が真横に移動する際の理論値です<br><br>
 
 作者X：
 <a href="https://x.com/jo_taku150?s=21" target="_blank">
   @jo_taku150
 </a>
-（何かお気づきの点があればご連絡ください）
-
 </div>
 
 
@@ -171,14 +157,13 @@ const cameraData = {
 
 
 /* ===============================
-   DOM取得
+   DOM
 =============================== */
 
 const brandSel = document.getElementById("brand");
 const modelSel = document.getElementById("model");
 const pixelInput = document.getElementById("pixel");
 const manual = document.getElementById("manual");
-const cameraStatus = document.getElementById("cameraStatus");
 
 const STORAGE_KEY = "cameraSetting";
 
@@ -212,17 +197,7 @@ function updatePixel(){
 
 
 /* ===============================
-   現在設定表示
-=============================== */
-
-function updateStatus(){
-  cameraStatus.textContent =
-    `現在：${brandSel.value} / ${modelSel.value} / ${pixelInput.value}px`;
-}
-
-
-/* ===============================
-   保存（localStorage）
+   保存（自動記憶）
 =============================== */
 
 function saveSetting(){
@@ -258,32 +233,25 @@ function loadSetting(){
 brandSel.onchange = ()=>{
   updateModels();
   saveSetting();
-  updateStatus();
 };
 
 modelSel.onchange = ()=>{
   updatePixel();
   saveSetting();
-  updateStatus();
 };
 
 manual.onchange = ()=>{
-  pixelInput.disabled=!manual.checked;
+  pixelInput.disabled = !manual.checked;
   updatePixel();
   saveSetting();
-  updateStatus();
 };
 
-pixelInput.oninput = ()=>{
-  saveSetting();
-  updateStatus();
-};
+pixelInput.oninput = saveSetting;
 
 
 /* 初期化 */
 updateModels();
 loadSetting();
-updateStatus();
 
 
 /* ===============================
