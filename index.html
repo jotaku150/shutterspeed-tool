@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>列車サイドビュー撮影シャッタースピード計算</title>
+<title>シャッタースピード計算</title>
 
 <style>
 body{
@@ -30,15 +30,15 @@ button{
 </head>
 
 <body>
-<h2>🚄 シャッタースピード計算</h2>
+<h2>🚄シャッタースピード計算📷</h2>
 
-速度(km/h)<br>
+列車速度(km/h)<br>
 <input id="speed" type="number"><br>
 
 画角の横幅(m)<br>
 <input id="width" type="number" step="0.1"><br>
 
-横ピクセル数(px)<br>
+カメラの横ピクセル数(px)<br>
 <input id="pixel" type="number"><br>
 
 <button onclick="calc()">計算する</button>
@@ -63,7 +63,8 @@ function calc() {
   const shutter = 1 / tPixel;
 
   document.getElementById("result").textContent =
-    `必要シャッター速度： 1/${Math.round(shutter)} 秒`;
+    `必要シャッター速度： 1/${Math.round(shutter)} 秒`; <br>
+    ※あくまでも理論値です。手ブレは加味していません。
 }
 </script>
 
